@@ -1,19 +1,58 @@
-<script setup>
-import { ref } from "vue";
-import useStore from "@/store";
-import { onMounted } from "vue";
+<template>
+  <a-button type="primary" @click="changeVisible">Add</a-button>
+  <AddEdit :visible="visible" :onCancel="changeVisible" :formData="initUser"/>
+  <a-table :row-key="(record) => record.xid" :dataSource="users" :columns="columns" bordered class="mt-4">
+    <template #bodyCell="{ column, record }">
+      <template v-if="column.key === 'image'">
+        <a-image :src="record.image" :width="150" />
+      </template>
+      <template v-if="column.key === 'action'">
+        <a-space>
+          <a-button type="primary" @click="onUpdate(record)">
+            <EditOutlined />
+          </a-button>
+          <a-button type="primary" danger @click="deleteUser(record._id)">
+            <DeleteOutlined />
+          </a-button>
+        </a-space>
+      </template>
+    </template>
+  </a-table>
+  <!-- <a-button
+    type="primary"
+    @click="
+      addUser(initUser).then(() => {
+        initUser = { name: '', age: 0 };
+      })
+    "
+    v-if="!isUpdate"
+  >
+    Add
+  </a-button>
+  <button type="button" @click="handleUpdate" v-else>Update</button> -->
+</template>
 
-const user = useStore((state) => state.user);
+<script setup>
+import { ref, onMounted } from "vue";
+import fields from "@/composibles/fields";
+import useStore from "@/store";
+
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons-vue";
+import AddEdit from "@/components/AddEdit.vue";
+
+const users = useStore((state) => state.user);
 const getUser = useStore((state) => state.getUser);
 const addUser = useStore((state) => state.addUser);
 const deleteUser = useStore((state) => state.delUser);
 const updateUser = useStore((state) => state.updateUser);
 
-const initUser = ref({
-  name: "",
-  age: 0,
-  image: null,
-});
+const { columns, initUser } = fields();
+
+const visible = ref(false);
+
+const changeVisible = () => {
+  visible.value = !visible.value;
+};
 
 onMounted(() => {
   getUser();
@@ -36,59 +75,3 @@ const handleUpdate = () => {
   });
 };
 </script>
-
-<template>
-  <div>
-    <form>
-      <input type="text" placeholder="Name" v-model="initUser.name" />
-      <input type="text" placeholder="Age" v-model="initUser.age" />
-      <input type="file" @change="onFileChange" />
-    </form>
-  </div>
-  <table cellpadding="5" cellspacing="0">
-    <tr>
-      <td>Name</td>
-      <td>Age</td>
-      <td>Image</td>
-      <td>Action</td>
-    </tr>
-    <tr v-for="u in user" :key="u._id">
-      <td>{{ u.name }}</td>
-      <td>{{ u.age }}</td>
-      <td><img :src="u.image" width="200px"/></td>
-      <td>
-        <button @click="deleteUser(u._id)">Delete</button>
-        <button @click="onUpdate(u)">Update</button>
-      </td>
-    </tr>
-  </table>
-  <button
-    type="button"
-    @click="
-      addUser(initUser).then(() => {
-        initUser = { name: '', age: 0 };
-      })
-    "
-    v-if="!isUpdate"
-  >
-    Add
-  </button>
-  <button type="button" @click="handleUpdate" v-else>Update</button>
-</template>
-
-<style scoped>
-.user {
-  color: white;
-}
-table {
-  min-width: 500px;
-  border: 1px solid #fff;
-  border-collapse: collapse;
-}
-.show {
-  display: inline-block;
-}
-.hide {
-  display: none;
-}
-</style>

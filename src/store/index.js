@@ -4,10 +4,7 @@ import axios from "axios";
 const baseURL = "http://127.0.0.1:3000/first";
 
 const useStore = create((set, get) => ({
-  count: 0,
   user: [],
-  increment: () => set((state) => ({ count: state.count + 1 })),
-  decrement: () => set((state) => ({ count: state.count - 1 })),
   getUser: async () => {
     try {
       const res = await axios.get(`${baseURL}/all`);
